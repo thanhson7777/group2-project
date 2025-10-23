@@ -1,1 +1,1 @@
-# group2-project
+Nguyễn Thanh Sơn
