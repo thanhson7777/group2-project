@@ -1,10 +1,11 @@
 // routes/index.js
 const express = require('express');
 const healthRoute = require('./health.route');
+const userRoute = require('./user');
 
 const router = express.Router();
 
 router.use('/health', healthRoute);
-// sau này: router.use('/users', usersRoute)
+router.use('/users', userRoute); 
 
 module.exports = router;
