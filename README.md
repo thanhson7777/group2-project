@@ -1,1 +1,1 @@
-# group2-project
+# Nguyen Thanh Son
