@@ -1,18 +1,17 @@
-// controllers/userController.js
+const User = require('../models/User'); // Import model User
 
-// MẢNG TẠM (giữ trong bộ nhớ khi server đang chạy)
-let users = [
-  { id: 1, name: 'Nguyễn Văn A', email: 'a@gmail.com' },
-  { id: 2, name: 'Trần Thị B', email: 'b@gmail.com' }
-];
-
-// GET /api/users
-const getUsers = (req, res) => {
-  res.json(users);
+// GET /api/users - Lấy tất cả người dùng
+const getUsers = async (req, res) => {
+  try {
+    const users = await User.find();  // Lấy tất cả người dùng từ MongoDB
+    res.json(users);  // Trả về danh sách người dùng dưới dạng JSON
+  } catch (err) {
+    res.status(500).json({ message: err.message });  // Trả về lỗi nếu có
+  }
 };
 
-// POST /api/users
-const createUser = (req, res) => {
+// POST /api/users - Tạo người dùng mới
+const createUser = async (req, res) => {
   const { name, email } = req.body;
 
   // Validate tối thiểu
@@ -21,23 +20,25 @@ const createUser = (req, res) => {
   }
 
   // Check trùng email
-  if (users.some(u => u.email.toLowerCase() === String(email).toLowerCase())) {
+  const existingUser = await User.findOne({ email: email.toLowerCase() });
+  if (existingUser) {
     return res.status(409).json({ error: 'Email đã tồn tại' });
   }
 
-  // Tạo id đơn giản (demo): timestamp
-  const newUser = {
-    id: Date.now(),
-    name: String(name).trim(),
-    email: String(email).trim()
-  };
+  // Tạo người dùng mới
+  const newUser = new User({
+    name: name.trim(),
+    email: email.trim()
+  });
 
-  users.push(newUser);
-
-  // Chuẩn REST: trả 201 + Location
-  res.status(201)
-     .location(`/api/users/${newUser.id}`)
-     .json(newUser);
+  try {
+    const savedUser = await newUser.save();  // Lưu người dùng vào MongoDB
+    res.status(201)  // Trả về mã trạng thái 201 (Created)
+       .location(`/api/users/${savedUser.id}`)
+       .json(savedUser);  // Trả về thông tin người dùng mới tạo
+  } catch (err) {
+    res.status(400).json({ message: err.message });  // Trả về lỗi nếu có
+  }
 };
 
 module.exports = { getUsers, createUser };
